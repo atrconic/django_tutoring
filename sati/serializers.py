@@ -2,6 +2,13 @@ from rest_framework import serializers
 from .models import Course, Class, Student, Mentor
 
 
+class MentorSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Mentor
+        fields = "__all__"
+
+
 class StudentSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(max_length=50)
     last_name = serializers.CharField(max_length=50)
@@ -9,6 +16,7 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = ("__all__")
+
 
 class CourseSerializer(serializers.ModelSerializer):
     course_description = serializers.CharField(max_length=200)
@@ -27,10 +35,18 @@ class ClassSerializer(serializers.ModelSerializer):
     class_duration = serializers.FloatField()
     date_time = serializers.DateTimeField()
     paid = serializers.BooleanField()
-    # student = StudentSerializer()
-    # def create(self, validated_data):
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
+    mentor = serializers.PrimaryKeyRelatedField(queryset=Mentor.objects.all())
 
+    def create(self, validated_data):
+        return Class.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['student'] = StudentSerializer(instance.student).data
+        representation['mentor'] = MentorSerializer(instance.mentor).data
+        return representation
 
     class Meta:
         model = Class
-        fields = ("__all__")
+        fields = "__all__"
