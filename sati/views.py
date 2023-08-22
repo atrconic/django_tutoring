@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework import status
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -7,7 +9,8 @@ from .models import Course, Class
 from .serializers import CourseSerializer, ClassSerializer
 
 
-class CoursesViews(APIView):
+class CoursesViews(ListAPIView):
+    pagination_class = PageNumberPagination
     def post(self, request):
         serializer = CourseSerializer(data=request.data)
         if serializer.is_valid():
@@ -58,6 +61,7 @@ class CourseViews(APIView):
         item = get_object_or_404(Course, id=id)
         item.delete()
         return Response({"data": None}, status=status.HTTP_200_OK)
+
 
 class ClassViews(APIView):
     def get(self, request, id):
